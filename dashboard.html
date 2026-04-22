@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSG.com Market Intelligence Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #f43f5e;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Area */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-area h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, var(--text-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        .status-badge {
+            background: var(--glass);
+            border: 1px border var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 24px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .up { color: #10b981; }
+
+        /* Main Content Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-box {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* Image Gallery */
+        .gallery-section {
+            margin-bottom: 4rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .gallery-item {
+            background: var(--card-bg);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: 0.3s;
+        }
+
+        .gallery-item:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .gallery-info {
+            padding: 1.5rem;
+        }
+
+        .gallery-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .gallery-info p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Insights Section */
+        .insights-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            padding: 3rem;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .insight-item h4 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .insight-text {
+            color: var(--text-dim);
+            font-size: 1rem;
+            white-space: pre-line;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .insight-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        .insight-text::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 5rem;
+            padding-bottom: 2rem;
+            color: var(--text-dim);
+            font-size: 0.875rem;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+            .logo-area h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <h1>SSG.com Market Intelligence</h1>
+                <p style="color: var(--text-dim);">Best Item Insights & Data Trends</p>
+            </div>
+            <div class="status-badge">
+                <div class="pulse"></div>
+                LIVE DATA ANALYSIS
+            </div>
+        </header>
+
+        <!-- Key Metrics -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-label">Total Analyzed Items</p>
+                <p class="stat-value">450</p>
+                <div class="stat-change up">▲ Real-time Collection</div>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Avg. Product Price</p>
+                <p class="stat-value">44,083₩</p>
+                <div class="stat-change" style="color: var(--text-dim);">Balanced Portfolio</div>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Customer Satisfaction</p>
+                <p class="stat-value">4.76<span style="font-size: 1rem; color: var(--text-dim);">/5</span></p>
+                <div class="stat-change up">▲ High Loyalty</div>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Dominant Brand</p>
+                <p class="stat-value" style="font-size: 2rem;">노브랜드 (No Brand)</p>
+                <div class="stat-change" style="color: var(--secondary);">PB Share: 12.6%</div>
+            </div>
+        </section>
+
+        <!-- Interactive Charts -->
+        <section class="main-grid">
+            <div class="chart-box">
+                <h2>Category Distribution by Site</h2>
+                <canvas id="siteChart" height="300"></canvas>
+            </div>
+            <div class="chart-box">
+                <h2>Top 5 Brand Share</h2>
+                <canvas id="brandChart" height="300"></canvas>
+            </div>
+        </section>
+
+        <!-- Image Gallery -->
+        <section class="gallery-section">
+            <h2>Visual Analysis Discovery</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="../images/price_dist.png" alt="Price Distribution">
+                    <div class="gallery-info">
+                        <h3>Price Distribution</h3>
+                        <p>Most items are concentrated in the affordable daily necessity range, showing a 'Long-tail' structure.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../images/brand_top10.png" alt="Top Brands">
+                    <div class="gallery-info">
+                        <h3>Market Dominance</h3>
+                        <p>No Brand and Peacock (PB brands) show high frequency, ensuring platform differentiation.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../images/price_vs_rating.png" alt="Price vs Rating">
+                    <div class="gallery-info">
+                        <h3>Price-Rating Correlation</h3>
+                        <p>High rating distribution regardless of price, but variance is higher in low-priced items.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../images/keyword_tfidf.png" alt="Keyword Trends">
+                    <div class="gallery-info">
+                        <h3>Keyword Intelligence (TF-IDF)</h3>
+                        <p>'Fresh', 'Meal-kit', and 'Health' keywords strongly define current consumer interests.</p>
+                    </div>
+                </div>
+                <!-- Additional images can be added here -->
+            </div>
+        </section>
+
+        <!-- Strategic Insights -->
+        <section class="insights-section">
+            <h2 style="margin-bottom: 2rem;">🛡 Strategic Business Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-item">
+                    <h4>Core Competitiveness</h4>
+                    <div class="insight-text">
+                        SSG.com의 핵심 경쟁력은 '신뢰'와 '가성비'의 완벽한 조화에 있습니다. 
+                        신세계 그룹의 강력한 오프라인 인프라를 온라인으로 전이시킴으로써 
+                        자사 브랜드(PB)의 지배력을 확보하고 있습니다. 
+                        특히 '노브랜드'와 '피코크'의 높은 점유율은 단순 리셀러를 넘어 
+                        독자적인 제조-유통 플랫폼으로서의 록인 효과를 창출합니다.
+                    </div>
+                </div>
+                <div class="insight-item">
+                    <h4>SCM & Logistics</h4>
+                    <div class="insight-text">
+                        낮은 품절률과 효율적인 물류 거점 분산은 고객 경험의 연속성을 보장합니다. 
+                        분석 결과에 따르면 물류 최적화가 잘 이루어진 거점 매장을 중심으로 
+                        인기 품목의 재고가 타이트하게 관리되고 있습니다. 
+                        향후 AI 기반 수요 예측 모델을 고도화하여 기회 손실을 0%에 
+                        가깝게 수렴시키는 SCM 고도화가 핵심 과제입니다.
+                    </div>
+                </div>
+                <div class="insight-item">
+                    <h4>Future Vision</h4>
+                    <div class="insight-text">
+                        데이터 기반의 개인화 추천과 리뷰 자산화가 성장의 열쇠입니다. 
+                        상향 평준화된 평점 데이터 사이에서 실제 유저의 '페인 포인트'를 
+                        발굴하기 위한 감성 분석 도입이 필요하며, 
+                        가격 저항선 구간에 따른 동적 가격 책정(Dynamic Pricing)을 통해 
+                        수익성을 극대화하는 지능형 유통 플랫폼으로 진화해야 합니다.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2026 SSG.com Market Intelligence Report. Generated by Antigravity AI.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Site Distribution Chart
+        const siteCtx = document.getElementById('siteChart').getContext('2d');
+        new Chart(siteCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Emart', 'Shinsegae Dept', 'Traders'],
+                datasets: [{
+                    label: 'Item Count',
+                    data: [336, 20, 9],
+                    backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+
+        // Brand Share Chart
+        const brandCtx = document.getElementById('brandChart').getContext('2d');
+        new Chart(brandCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['No Brand', 'Nongshim', 'Peacock', 'Pulmuone', 'CJ'],
+                datasets: [{
+                    data: [57, 22, 16, 14, 14],
+                    backgroundColor: [
+                        '#6366f1', '#a855f7', '#f43f5e', '#fbbf24', '#10b981'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', padding: 20 }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    </script>
+</body>
+</html>
